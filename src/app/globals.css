@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-feature-settings: "cv11", "ss01", "ss03";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  @apply bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100;
+  transition: background-color 200ms ease, color 200ms ease;
+}
+
+/* Subtle scrollbar */
+* {
+  scrollbar-width: thin;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background: rgb(203 213 225);
+}
+.dark *::-webkit-scrollbar-thumb {
+  background: rgb(51 65 85);
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Prevent the no-flash script from causing CLS by hiding nothing */
+html {
+  color-scheme: light;
+}
+html.dark {
+  color-scheme: dark;
+}

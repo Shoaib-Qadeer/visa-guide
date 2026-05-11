@@ -1,0 +1,48 @@
+# =====================================================================
+# Nginx reverse proxy for the Visa Guide Next.js app
+#
+# Place at:  /etc/nginx/sites-available/visa-guide
+# Then:      sudo ln -s /etc/nginx/sites-available/visa-guide /etc/nginx/sites-enabled/
+#            sudo nginx -t && sudo systemctl reload nginx
+#
+# After this is live, install SSL with:
+#   sudo certbot --nginx -d visa-guide.example.com
+# Certbot will rewrite this file to add TLS + an HTTP -> HTTPS redirect.
+# =====================================================================
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name visa-guide.example.com;
+
+    # Reasonable upload size for future document uploads.
+    client_max_body_size 25m;
+
+    # gzip is fine; Next.js already serves immutable static assets
+    # under /_next/static which we cache aggressively below.
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript
+               application/xml text/javascript image/svg+xml;
+    gzip_min_length 1024;
+
+    # Long-cache hashed assets.
+    location /_next/static/ {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_set_header Host $host;
+        add_header Cache-Control "public, max-age=31536000, immutable";
+    }
+
+    # Everything else -> Next.js on PM2.
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+        proxy_read_timeout 60s;
+    }
+}
